@@ -44,7 +44,7 @@ def human_help(message):
         dev.send_email("Need human help : UserRightsBot - Self-Diagnosis failed", full_message, ccme=False)
         return
 
-def Checks(right):
+def checks(right):
     """Perform some checks to ensure we are handling nominations correctly, also try to self add comments if not found."""
     if re.search((r"<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)end(?:[\s|]*?)-->" % right), (rfr_page.get(get_redirect=True))) is None:
         if rights.index(right) < (len(rights)-1):
@@ -71,7 +71,7 @@ def Checks(right):
         except:
             human_help("Missing start tag for %s , but unable to self fix. You can fix this error by adding the following text at appropriate loction on [[COM:RFR]]\n<code><nowiki><!-- %s candidates start --></nowiki></code>" % (right, right))
 
-def Archive(text_to_add,right,status,username):
+def archive(text_to_add,right,status,username):
     """If a nomination is approved/declined add to archive and remove from COM:RFR page."""
     archive_page = pywikibot.Page(SITE, (rfr_base_page_name + status + right + "/" + str((datetime.datetime.now()).year)))
     try:
@@ -101,10 +101,10 @@ def handle_candidates(right):
             continue
         if re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
             out("User:%s is granted  %s rights" % (user,right), color="green", date=True)
-            Archive(candidate_text, right, "/Approved/", user)
+            archive(candidate_text, right, "/Approved/", user)
         elif re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
             out("User:%s is denied %s rights" % (user,right), color='red', date=True)
-            Archive(candidate_text, right, "/Denied/", user)
+            archive(candidate_text, right, "/Denied/", user)
         else:
             continue
 
@@ -124,7 +124,7 @@ def main():
         'Upload Wizard campaign editors' # 7
         ]
     for right in rights:
-        Checks(right)
+        checks(right)
         handle_candidates(right)
 
 if __name__ == "__main__":
