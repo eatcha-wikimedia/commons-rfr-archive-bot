@@ -62,7 +62,7 @@ def checks(right):
         if rights.index(right) > 0:
             regex = r"<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)end(?:[\s|]*?)-->" % rights[(rights.index(right)-1)]
         else:
-            regex = r"==(\s*)[Cc]onfirmed(\s*)=="
+            regex = r"==(\s*)%s(\s*)==" % (rights[0])
         try:
             prior_end = re.search(regex, text).group()
             new_text = rfr_page.get().replace(prior_end, (prior_end + "\n" + ("<!-- %s candidates start -->" % right)))
