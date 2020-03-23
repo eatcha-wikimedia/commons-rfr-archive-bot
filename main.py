@@ -26,7 +26,7 @@ def out(text, newline=True, date=False, color=None):
         text = "\03{%s}%s\03{default}" % (color, text)
     dstr = (
         "%s: " % datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        if date and not G_LogNoTime
+        if date
         else ""
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
@@ -85,7 +85,7 @@ def archive(text_to_add,right,status,username):
         human_help("%s is locked, unable to archive closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % (archive_page, error))
         return
     try:
-        out("Editing %s" rfr_base_page_name)
+        out("Editing %s" % rfr_base_page_name)
         commit(rfr_page.get(), (rfr_page.get(get_redirect=False)).replace(text_to_add, ""), rfr_page, summary=(("STATUS: %s " % (status.replace("/","",2))) + "Removing " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request"))
     except pywikibot.LockedPage as error:
         human_help("%s is locked, unable to remove closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % ("COM:RFR", error))
