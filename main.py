@@ -50,7 +50,7 @@ def checks(right):
         if rights.index(right) < (len(rights)-1):
             regex = r"<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)start(?:[\s|]*?)-->" % rights[(rights.index(right)+1)]
         else:
-            regex = r"==(\s*)Translation(\s*)administrators(\s*)&(\s*)GW(\s*)Toolset(\s*)users =="
+            regex = r"==(?:\s*)Translation(?:\s*)administrators(?:\s*)&(?:\s*)GW(?:\s*)Toolset(?:\s*)users(?:\s*)=="
         try:
             next_start = re.search(regex, text).group()
             new_text = rfr_page.get().replace(next_start, (("<!-- %s candidates end -->" % right) + "\n" + next_start))
