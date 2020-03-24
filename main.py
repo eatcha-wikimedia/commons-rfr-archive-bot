@@ -17,6 +17,7 @@ def users_in_section(right):
 
 def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
+    out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
@@ -79,13 +80,11 @@ def archive(text_to_add,right,status,username):
     except pywikibot.exceptions.NoPage:
         old_text = ""
     try:
-        out("Editing %s" % archive_page)
         commit(old_text, (old_text + "\n" + text_to_add), archive_page, summary=("Adding " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request"))
     except pywikibot.LockedPage as error:
         human_help("%s is locked, unable to archive closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % (archive_page, error))
         return
     try:
-        out("Editing %s" % rfr_base_page_name)
         commit(rfr_page.get(), (rfr_page.get(get_redirect=False)).replace(text_to_add, ""), rfr_page, summary=(("STATUS: %s " % (status.replace("/","",2))) + "Removing " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request"))
     except pywikibot.LockedPage as error:
         human_help("%s is locked, unable to remove closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % ("COM:RFR", error))
