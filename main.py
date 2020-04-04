@@ -33,8 +33,7 @@ def out(text, newline=True, date=False, color=None):
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
 def human_help(message):
-
-    """Ask humans to help, if can't self fix missing helper comments."""
+    """Ask humans for help, if can't self fix missing helper comments."""
     full_message = ("\n==Need human help : Self-Diagnosis failed - UserRightsBot ==\n" + message)
 
     try:
@@ -83,7 +82,7 @@ def archive(text_to_add,right,status,username):
         human_help("%s is locked, unable to archive closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % (archive_page, error))
         return
     try:
-        commit(rfr_page.get(), (rfr_page.get(get_redirect=False)).replace(text_to_add, ""), rfr_page, summary=(("STATUS: %s " % (status.replace("/","",2))) + "Removing " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request"))
+        commit(rfr_page.get(), (rfr_page.get(get_redirect=False)).replace(text_to_add, ""), rfr_page, summary=("Removing " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request" + (" (status: %s) " % (status.replace("/","",2)))))
     except pywikibot.LockedPage as error:
         human_help("%s is locked, unable to remove closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % ("COM:RFR", error))
         return
