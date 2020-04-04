@@ -33,17 +33,15 @@ def out(text, newline=True, date=False, color=None):
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
 def human_help(message):
+
     """Ask humans to help, if can't self fix missing helper comments."""
     full_message = ("\n==Need human help : Self-Diagnosis failed - UserRightsBot ==\n" + message)
-    human_help_page = pywikibot.Page(SITE, "Commons:Administrators' noticeboard") # Spam the admins, they can at least block the bot.
-    old_text = human_help_page.get(get_redirect=True)
-    new_text = old_text + full_message
+
     try:
-        commit(old_text, new_text, human_help_page, summary="Need human help : UserRightsBot - Self-Diagnosis failed")
-    except:
         dev = pywikibot.User(SITE, "Eatcha")
         dev.send_email("Need human help : UserRightsBot - Self-Diagnosis failed", full_message, ccme=False)
-        return
+    except:
+        pass
 
 def checks(right):
     """Perform some checks to ensure we are handling nominations correctly, also try to self add comments if not found."""
@@ -53,7 +51,7 @@ def checks(right):
         else:
             regex = r"==(?:\s*)Translation(?:\s*)administrators(?:\s*)&(?:\s*)GW(?:\s*)Toolset(?:\s*)users(?:\s*)=="
         try:
-            next_start = re.search(regex, text).group()
+            next_start = re.search(regex, rfr_page.get(get_redirect=True)).group()
             new_text = rfr_page.get().replace(next_start, (("<!-- %s candidates end -->" % right) + "\n" + next_start))
             edit_summary = ("Self-Diagnosis  : adding %s end comment" % right)
             commit(rfr_page.get(), new_text, rfr_page, summary=edit_summary)
@@ -65,7 +63,7 @@ def checks(right):
         else:
             regex = r"==(\s*)%s(\s*)==" % (rights[0])
         try:
-            prior_end = re.search(regex, text).group()
+            prior_end = re.search(regex, rfr_page.get(get_redirect=True)).group()
             new_text = rfr_page.get().replace(prior_end, (prior_end + "\n" + ("<!-- %s candidates start -->" % right)))
             edit_summary = ("Self-Diagnosis  : adding %s start comment" % right)
             commit(rfr_page.get(), new_text, rfr_page, summary=edit_summary)
