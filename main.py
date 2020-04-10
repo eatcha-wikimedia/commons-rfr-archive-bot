@@ -82,7 +82,7 @@ def archive(text_to_add,right,status,username):
         human_help("%s is locked, unable to archive closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % (archive_page, error))
         return
     try:
-        commit(rfr_page.get(), (rfr_page.get(get_redirect=False)).replace(text_to_add, ""), rfr_page, summary=("Removing " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request" + (" (status: %s) " % (status.replace("/","",2)))))
+        commit(rfr_page.get(), (rfr_page.get(get_redirect=False)).replace(text_to_add, ""), rfr_page, summary=("Removing " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request" + (" (Status: %s) " % (status.replace("/","",2)))))
     except pywikibot.LockedPage as error:
         human_help("%s is locked, unable to remove closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % ("COM:RFR", error))
         return
