@@ -132,6 +132,7 @@ def main():
     for right in rights:
         checks(right)
         handle_candidates(right)
+    TellLastRun()
 
 if __name__ == "__main__":
   try:
