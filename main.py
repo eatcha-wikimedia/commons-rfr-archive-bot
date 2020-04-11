@@ -102,6 +102,7 @@ def handle_candidates(right):
             out("User:%s is denied %s rights" % (user,right), color='red', date=True)
             archive(candidate_text, right, "/Denied/", user)
         else:
+            out("User:%s is still waiting for %s rights to be granted" % (user,right), color='white', date=True)
             continue
 
 def main():
