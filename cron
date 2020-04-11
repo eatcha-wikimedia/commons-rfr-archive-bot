@@ -1,1 +1,1 @@
-33 6,14,22 * * * jsub -once -quiet /data/project/vrb/UserRightsBot/venv/bin/commons-rfr-archive-bot-v1 /data/project/vrb/UserRightsBot/commons-rfr-archive-bot/main.py
+33 6,14,22 * * * jsub -once -quiet -N commons_rfr_archive python3 /data/project/fpcstats/commons-rfr-archive-bot/main.py
