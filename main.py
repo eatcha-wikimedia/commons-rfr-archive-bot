@@ -71,7 +71,7 @@ def checks(right):
 
 def archive(text_to_add,right,status,username):
     """If a nomination is approved/declined add to archive and remove from COM:RFR page."""
-    archive_page = pywikibot.Page(SITE, (rfr_base_page_name + status + right + "/" + str((datetime.datetime.now()).year)))
+    archive_page = pywikibot.Page(SITE, (rfr_base_page_name + status + right + "/" + str((datetime.datetime.utcnow()).year)))
     try:
         old_text = archive_page.get(get_redirect=False)
     except pywikibot.exceptions.NoPage:
@@ -86,6 +86,15 @@ def archive(text_to_add,right,status,username):
     except pywikibot.LockedPage as error:
         human_help("%s is locked, unable to remove closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % ("COM:RFR", error))
         return
+
+def TellLastRun():
+    page = pywikibot.Page(SITE, "User:UserRightsBot/last-run")
+    try:
+        old_text = page.get(get_redirect=False)
+    except pywikibot.exceptions.NoPage:
+        old_text = ""
+    out("Updating last run time", newline=True, date=True, color="yellow")
+    commit(old_text, str(datetime.datetime.utcnow()), page, "Updating last complete run time")
 
 def handle_candidates(right):
     """Sort the candidates and handle them."""
