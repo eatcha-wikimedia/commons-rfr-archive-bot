@@ -10,6 +10,7 @@ def getCandText(username, rights_section):
     return re.search((r"((?:.*?)\n(?:\s*?)(?:\*|#|)(?:\s*?){{[Uu]ser5\|%s}}(?:[\s\S]*?))(<!--|====)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), rights_section).group(1)
 
 def LastRightAdded(UserPageTitle):
+    unix_time= (datetime.date.today() - datetime.timedelta(8)).strftime("%s")
     logevents = pywikibot.site.APISite.logevents(SITE, logtype = "rights", page = UserPageTitle, end = "%s" % unix_time)
     for log in logevents:
         old_rights = log.data['params']['oldgroups']
