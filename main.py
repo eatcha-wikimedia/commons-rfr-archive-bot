@@ -10,7 +10,7 @@ def getCandText(username, rights_section):
     return re.search((r"((?:.*?)\n(?:\s*?)(?:\*|#|)(?:\s*?){{[Uu]ser5\|%s}}(?:[\s\S]*?))(<!--|====)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), rights_section).group(1)
 
 def LastRightAdded(UserPageTitle):
-    unix_time= (datetime.date.today() - datetime.timedelta(8)).strftime("%s")
+    unix_time= (datetime.date.today() - datetime.timedelta(2)).strftime("%s")
     logevents = pywikibot.site.APISite.logevents(SITE, logtype = "rights", page = UserPageTitle, end = "%s" % unix_time)
     for log in logevents:
         old_rights = log.data['params']['oldgroups']
@@ -19,7 +19,7 @@ def LastRightAdded(UserPageTitle):
 
         assigner = log.data['user']
         rights_added = list(  set(new_rights).difference(set(old_rights))  )
-    return rights_added
+        return rights_added
 
 def users_in_section(right):
     """Get all users in a particular rights's nomination area."""
