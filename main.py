@@ -11,12 +11,12 @@ def getCandText(username, rights_section):
 
 def LastRightAdded(UserPageTitle):
     logevents = pywikibot.site.APISite.logevents(SITE, logtype = "rights", page = UserPageTitle, end = "%s" % unix_time)
-    for deleted_file in logevents:
-        old_rights = deleted_file.data['params']['oldgroups']
-        print(old_rights)
-        new_rights = deleted_file.data['params']['newgroups']
-        print(new_rights)
-        assigner = deleted_file.data['user']
+    for log in logevents:
+        old_rights = log.data['params']['oldgroups']
+
+        new_rights = log.data['params']['newgroups']
+
+        assigner = log.data['user']
         rights_added = list(  set(new_rights).difference(set(old_rights))  )
     return rights_added
 
