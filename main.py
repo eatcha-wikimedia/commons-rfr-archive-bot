@@ -9,6 +9,17 @@ def getCandText(username, rights_section):
     """Get the candidate's nomination from COM:RFR, includes all commnent."""
     return re.search((r"((?:.*?)\n(?:\s*?)(?:\*|#|)(?:\s*?){{[Uu]ser5\|%s}}(?:[\s\S]*?))(<!--|====)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), rights_section).group(1)
 
+def LastRightAdded(UserPageTitle):
+    logevents = pywikibot.site.APISite.logevents(SITE, logtype = "rights", page = UserPageTitle, end = "%s" % unix_time)
+    for deleted_file in logevents:
+        old_rights = deleted_file.data['params']['oldgroups']
+        print(old_rights)
+        new_rights = deleted_file.data['params']['newgroups']
+        print(new_rights)
+        assigner = deleted_file.data['user']
+        rights_added = list(  set(new_rights).difference(set(old_rights))  )
+    return rights_added
+
 def users_in_section(right):
     """Get all users in a particular rights's nomination area."""
     section = re.search(("<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)start(?:[\s|]*?)-->([\s\S]*?)<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)end(?:[\s|]*?)-->" % (right,right)), (rfr_page.get(get_redirect=False))).group()
