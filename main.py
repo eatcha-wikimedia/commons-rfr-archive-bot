@@ -116,12 +116,13 @@ def handle_candidates(right):
             candidate_text = getCandText(user, section)
         except AttributeError:
             continue
-        if re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
-            out("User:%s is granted  %s rights" % (user,right), color="green", date=True)
-            archive(candidate_text, right, "/Approved/", user)
-        elif re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
+
+        if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
             out("User:%s is denied %s rights" % (user,right), color='red', date=True)
             archive(candidate_text, right, "/Denied/", user)
+        elif re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
+            out("User:%s is granted  %s rights" % (user,right), color="green", date=True)
+            archive(candidate_text, right, "/Approved/", user)
         else:
             out("User:%s is still waiting for %s rights to be granted" % (user,right), color='white', date=True)
             continue
