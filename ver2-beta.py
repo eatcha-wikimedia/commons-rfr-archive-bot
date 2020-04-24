@@ -82,23 +82,19 @@ Hello Killarnee. I wanted to replace a duplicate and rename the file, but instea
 
 import re
 
-matches = re.finditer(r"==([^=]*?)==", text)
+def rights_section_finder_arrays(text):
+    matches = re.finditer(r"==([^=]*?)==", text)
+    right_start_array = []
+    for m in matches:
+        right_name = m.group(1)
+        if right_name and not right_name.isspace():
+            right_start = m.group(0)
+            right_start_array.append(right_start)
+    array_regex = []
+    for i,start in enumerate(right_start_array):
+        regex = "%s(.*)%s" % (start, right_start_array[1+i] if i < (len(right_start_array)-1) else "<!-- User:UserRightsBot - ON -->")
+        array_regex.append(regex)
+    
+    return array_regex
 
-right_start_array = []
-for m in matches:
-    right_name = m.group(1)
-    if right_name and not right_name.isspace():
-        right_start = m.group(0)
-        right_start_array.append(right_start)
-
-
-print(right_start_array)
-print("\n\n\n\n")
-array_regex = []
-for i,start in enumerate(right_start_array):
-    regex = "%s(.*)%s" % (start, right_start_array[1+i] if i < (len(right_start_array)-1) else "<!-- User:UserRightsBot - ON -->")
-    #print(array_regex)
-    array_regex.append(regex)
-
-print(array_regex)
-
+print(rights_section_finder_arrays(text))
