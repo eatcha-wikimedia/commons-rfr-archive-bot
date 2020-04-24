@@ -83,8 +83,21 @@ import re
 
 matches = re.finditer(r"==([^=]*?)==", text)
 
+right_start_array = []
 for m in matches:
     right_name = m.group(1)
     if right_name and not right_name.isspace():
         right_start = m.group(0)
-        print(right_start)
+        right_start_array.append(right_start)
+
+print(right_start_array)
+
+array_regex = []
+for start in right_start_array:
+    regex = "%s(.*?)" % (start)
+    array_regex.append(regex)
+
+print(array_regex)
+
+cr = re.search(r"== Confirmed ==(.*)== Autopatrol ==", text, re.DOTALL).group(1)
+print(cr)
