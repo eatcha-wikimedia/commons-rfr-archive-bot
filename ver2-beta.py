@@ -84,6 +84,7 @@ import re
 matches = re.finditer(r"==([^=]*?)==", text)
 
 for m in matches:
-    cand_head = m.group(1)
-    if cand_head and not cand_head.isspace():
-        print(cand_head)
+    right_name = m.group(1)
+    if right_name and not right_name.isspace():
+        right_start = m.group(0)
+        print(right_start)
