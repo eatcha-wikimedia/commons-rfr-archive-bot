@@ -82,7 +82,7 @@ Hello Killarnee. I wanted to replace a duplicate and rename the file, but instea
 
 import re
 
-def rights_section_finder_arrays(text):
+def rights_section_finder_array(text):
     matches = re.finditer(r"==([^=]*?)==", text)
     right_start_array = []
     for m in matches:
@@ -97,4 +97,4 @@ def rights_section_finder_arrays(text):
     
     return array_regex
 
-print(rights_section_finder_arrays(text))
+print(rights_section_finder_array(text))
