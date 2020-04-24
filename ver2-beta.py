@@ -77,6 +77,7 @@ Hello Killarnee. I wanted to replace a duplicate and rename the file, but instea
 {{See also|Commons:GWToolset users|GWToolset users|Commons:Translation administrators|Translation administrators}}
 {{tmbox|text=Only [[Commons:Bureaucrats|bureaucrats]] can grant these rights, so please request them on the [[Commons:Bureaucrats' noticeboard|bureaucrats' noticeboard]].}}
 
+<!-- User:UserRightsBot - ON -->
 """
 
 import re
@@ -90,14 +91,14 @@ for m in matches:
         right_start = m.group(0)
         right_start_array.append(right_start)
 
-print(right_start_array)
 
+print(right_start_array)
+print("\n\n\n\n")
 array_regex = []
-for start in right_start_array:
-    regex = "%s(.*?)" % (start)
+for i,start in enumerate(right_start_array):
+    regex = "%s(.*)%s" % (start, right_start_array[1+i] if i < (len(right_start_array)-1) else "<!-- User:UserRightsBot - ON -->")
+    #print(array_regex)
     array_regex.append(regex)
 
 print(array_regex)
 
-cr = re.search(r"== Confirmed ==(.*)== Autopatrol ==", text, re.DOTALL).group(1)
-print(cr)
