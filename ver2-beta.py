@@ -3,7 +3,6 @@ import pywikibot
 import datetime
 
 SITE = pywikibot.Site()
-
 rfr_base_page_name = "Commons:Requests_for_rights"
 rfr_page = pywikibot.Page(SITE, rfr_base_page_name)
 
@@ -60,6 +59,9 @@ def rights_section_finder_array(text):
 
 def archive(text_to_add,right,status,username):
     """If a nomination is approved/declined add to archive and remove from COM:RFR page."""
+    if not right:
+        out(" New rights found, please declare in dict_for_archive for conversion" ,color = "red" )
+        return
     archive_page = pywikibot.Page(SITE, (rfr_base_page_name + status + right + "/" + str((datetime.datetime.utcnow()).year)))
     try:
         old_text = archive_page.get(get_redirect=False)
@@ -77,6 +79,18 @@ def archive(text_to_add,right,status,username):
         return
 
 def handle_candidates():
+    dict_for_archive = {
+    'Confirmed' : 'Confirmed',
+    'Autopatrol' : 'Autopatrolled',
+    'AutoWikiBrowser access' : 'AutoWikiBrowser access',
+    'Patroller' : 'Patroller',
+    'Rollback' : 'Rollback',
+    'Template editor' : 'Template editor',
+    'Filemover' : 'Filemover',
+    'Upload Wizard campaign editors' : 'Upload Wizard campaign editors',
+    'Translation administrators & GW Toolset users' : None,
+        
+    }
     text = rfr_page.get()
     rights_name_array, rights_regex_array = rights_section_finder_array(text)
     for right_name in rights_name_array:
@@ -88,25 +102,19 @@ def handle_candidates():
 
             if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
                 out("User:%s is denied %s rights" % (user,right_name), color='red', date=True)
-                archive(candidate_text, right_name, "/Denied/", user)
+                archive(candidate_text, dict_for_archive.get(right_name, None), "/Denied/", user)
             elif re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
                 out("User:%s is granted  %s rights" % (user,right_name), color="green", date=True)
-                archive(candidate_text, right_name, "/Approved/", user)
+                archive(candidate_text, dict_for_archive.get(right_name, None), "/Approved/", user)
             else:
                 out("User:%s is still waiting for %s rights to be granted" % (user,right_name), color='white', date=True)
                 continue
 
-    
-
 def main():
-
-    
     # if not SITE.logged_in():
     #     SITE.login()
     handle_candidates()
     TellLastRun()
-
-#print(rights_section_finder_array(text))
 
 if __name__ == "__main__":
   try:
