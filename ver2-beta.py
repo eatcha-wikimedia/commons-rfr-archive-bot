@@ -58,6 +58,22 @@ def rights_section_finder_array(text):
         array_regex.append(regex)
     return right_name_array, array_regex
 
+def archive(text_to_add,right,status,username):
+    """If a nomination is approved/declined add to archive and remove from COM:RFR page."""
+    archive_page = pywikibot.Page(SITE, (rfr_base_page_name + status + right + "/" + str((datetime.datetime.utcnow()).year)))
+    try:
+        old_text = archive_page.get(get_redirect=False)
+    except pywikibot.exceptions.NoPage:
+        old_text = ""
+    try:
+        commit(old_text, (old_text + "\n" + text_to_add), archive_page, summary=("Adding " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request"))
+    except pywikibot.LockedPage as error:
+        return
+    try:
+        commit(rfr_page.get(), (rfr_page.get(get_redirect=False)).replace(text_to_add, ""), rfr_page, summary=("Removing " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request" + (" (Status: %s) " % (status.replace("/","",2)))))
+    except pywikibot.LockedPage as error:
+        return
+
 def handle_candidates():
     text = rfr_page.get()
     rights_name_array, rights_regex_array = rights_section_finder_array(text)
@@ -67,12 +83,13 @@ def handle_candidates():
         users = users_in_section(right_section)
         for user in users:
             candidate_text = getCandText(user, right_section)
-            
 
             if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
                 out("User:%s is denied %s rights" % (user,right_name), color='red', date=True)
+                archive(candidate_text, right_name, "/Denied/", user)
             elif re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
                 out("User:%s is granted  %s rights" % (user,right_name), color="green", date=True)
+                archive(candidate_text, right_name, "/Approved/", user)
             else:
                 out("User:%s is still waiting for %s rights to be granted" % (user,right_name), color='white', date=True)
                 continue
