@@ -78,6 +78,16 @@ def archive(text_to_add,right,status,username):
         out(error,color="red")
         return
 
+def hours_since_granted(text):
+    time_stamps = re.findall(r"[0-9]{1,2}:[0-9]{1,2},\s[0-9]{1,2}\s[a-zA-Z]{1,9}\s[0-9]{4}\s\(UTC\)", text)
+    for time_stamp in time_stamps:
+        last_edit_time = time_stamp
+    try:
+        dt = ( (datetime.datetime.utcnow()) - datetime.datetime.strptime(last_edit_time, '%I:%M, %d %B %Y (UTC)') )
+    except UnboundLocalError:
+        return 0
+    return (int(dt.seconds/3600))
+
 def handle_candidates():
     dict_for_archive = {
     'Confirmed' : 'Confirmed',
