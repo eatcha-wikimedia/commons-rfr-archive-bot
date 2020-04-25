@@ -28,6 +28,10 @@ def out(text, newline=True, date=False, color=None):
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
+def getCandText(username, rights_section):
+    """Get the candidate's nomination from COM:RFR, includes all commnent."""
+    return re.search((r"(.*?\n.*?{{User5\|%s}}(?:[\s\S]*?))(?:[=]{2,4})" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), rights_section).group(1).strip()
+
 def rights_section_finder_array(text):
     matches = re.finditer(r"==([^=]*?)==", text)
     rights_start_array = []
