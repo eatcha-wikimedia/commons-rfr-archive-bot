@@ -2,6 +2,11 @@ import re
 import pywikibot
 import datetime
 
+SITE = pywikibot.Site()
+
+rfr_base_page_name = "Commons:Requests_for_rights"
+rfr_page = pywikibot.Page(SITE, rfr_base_page_name)
+
 def TellLastRun():
     page = pywikibot.Page(SITE, "User:UserRightsBot/last-run")
     try:
@@ -15,7 +20,7 @@ def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
-    page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
+    #page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
 def out(text, newline=True, date=False, color=None):
     """Just output some text to the consoloe or log."""
@@ -35,7 +40,7 @@ def users_in_section(text):
 
 def getCandText(username, right_section):
     """Get the candidate's nomination from COM:RFR, includes all commnent."""
-    return re.search((r"(.*?\n.*?{{User5\|%s}}(?:[\s\S]*?))(?:[=]{2,4})" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1).strip()
+    return re.search((r"(.*?\n.*?{{User5\|%s}}(?:[\s\S]*?))(?:\n\n|==)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1)
 
 def rights_section_finder_array(text):
     matches = re.finditer(r"==([^=]*?)==", text)
@@ -54,26 +59,31 @@ def rights_section_finder_array(text):
     return right_name_array, array_regex
 
 def handle_candidates():
+    text = rfr_page.get()
     rights_name_array, rights_regex_array = rights_section_finder_array(text)
     for right_name in rights_name_array:
         right_regex = rights_regex_array[rights_name_array.index(right_name)]
         right_section = re.search(right_regex, text, re.DOTALL).group(1)
-        users = users_in_section(text)
+        users = users_in_section(right_section)
         for user in users:
-            candidate_text = getCandText(username, right_section)
-            if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text):
-                out("User:%s is denied %s rights" % (user,right), color='red', date=True)
+            candidate_text = getCandText(user, right_section)
+            
+
+            if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
+                out("User:%s is denied %s rights" % (user,right_name), color='red', date=True)
             elif re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
-                out("User:%s is granted  %s rights" % (user,right), color="green", date=True)
+                out("User:%s is granted  %s rights" % (user,right_name), color="green", date=True)
             else:
-                out("User:%s is still waiting for %s rights to be granted" % (user,right), color='white', date=True)
+                out("User:%s is still waiting for %s rights to be granted" % (user,right_name), color='white', date=True)
                 continue
 
     
 
 def main():
-    if not SITE.logged_in():
-        SITE.login()
+
+    
+    # if not SITE.logged_in():
+    #     SITE.login()
     handle_candidates()
     TellLastRun()
 
