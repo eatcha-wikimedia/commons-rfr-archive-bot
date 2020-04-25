@@ -30,22 +30,27 @@ def out(text, newline=True, date=False, color=None):
 
 def rights_section_finder_array(text):
     matches = re.finditer(r"==([^=]*?)==", text)
-    right_start_array = []
+    rights_start_array = []
     right_name_array = []
     for m in matches:
         right_name = m.group(1)
         if right_name and not right_name.isspace():
             right_name_array.append(right_name.strip())
             right_start = m.group(0)
-            right_start_array.append(right_start)
+            rights_start_array.append(right_start)
     array_regex = []
-    for i,start in enumerate(right_start_array):
-        regex = "%s(.*)%s" % (start, right_start_array[1+i] if i < (len(right_start_array)-1) else "<!-- User:UserRightsBot - ON -->")
+    for i,start in enumerate(rights_start_array):
+        regex = "%s(.*)%s" % (start, rights_start_array[1+i] if i < (len(rights_start_array)-1) else "<!-- User:UserRightsBot - ON -->")
         array_regex.append(regex)
     return right_name_array, array_regex
 
-def handle_candidates(right):
-    pass
+def handle_candidates():
+    rights_name_array, rights_regex_array = rights_section_finder_array(text)
+    for right_name in rights_name_array:
+        right_regex = rights_regex_array[rights_name_array.index(right_name)]
+        right_section = re.search(right_regex, text, re.DOTALL).group(1)
+        
+    
 
 def main():
     if not SITE.logged_in():
