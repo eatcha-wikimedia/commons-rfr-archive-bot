@@ -109,6 +109,10 @@ def handle_candidates():
         users = users_in_section(right_section)
         for user in users:
             candidate_text = getCandText(user, right_section)
+            dt = hours_since_granted(candidate_text)
+            if dt < 12:
+                out("candidate is %d hours only, will wait for 12 hours atleast" % dt, color = "yellow")
+                continue
 
             if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
                 out("User:%s is denied %s rights" % (user,right_name), color='red', date=True)
