@@ -1,37 +1,25 @@
+import re
 import pywikibot
-import re, datetime
+import datetime
 
 SITE = pywikibot.Site()
 rfr_base_page_name = "Commons:Requests_for_rights"
 rfr_page = pywikibot.Page(SITE, rfr_base_page_name)
 
-def getCandText(username, rights_section):
-    """Get the candidate's nomination from COM:RFR, includes all commnent."""
-    return re.search((r"((?:.*?)\n(?:\s*?)(?:\*|#|)(?:\s*?){{[Uu]ser5\|%s}}(?:[\s\S]*?))(<!--|====)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), rights_section).group(1)
-
-def LastRightAdded(UserPageTitle):
-    unix_time= (datetime.date.today() - datetime.timedelta(2)).strftime("%s")
-    logevents = pywikibot.site.APISite.logevents(SITE, logtype = "rights", page = UserPageTitle, end = "%s" % unix_time)
-    for log in logevents:
-        old_rights = log.data['params']['oldgroups']
-
-        new_rights = log.data['params']['newgroups']
-
-        assigner = log.data['user']
-        rights_added = list(  set(new_rights).difference(set(old_rights))  )
-        return rights_added
-
-def users_in_section(right):
-    """Get all users in a particular rights's nomination area."""
-    section = re.search(("<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)start(?:[\s|]*?)-->([\s\S]*?)<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)end(?:[\s|]*?)-->" % (right,right)), (rfr_page.get(get_redirect=False))).group()
-    users = re.findall(r"{{User5\|(.*?)}}", section)
-    return section, users
+def TellLastRun():
+    page = pywikibot.Page(SITE, "User:UserRightsBot/last-run")
+    try:
+        old_text = page.get(get_redirect=False)
+    except pywikibot.exceptions.NoPage:
+        old_text = ""
+    out("Updating last run time", newline=True, date=True, color="yellow")
+    commit(old_text, str(datetime.datetime.utcnow()), page, "Updating last complete run time")
 
 def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
-    page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
+    #page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
 def out(text, newline=True, date=False, color=None):
     """Just output some text to the consoloe or log."""
@@ -44,45 +32,36 @@ def out(text, newline=True, date=False, color=None):
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
-def human_help(message):
-    """Ask humans for help, if can't self fix missing helper comments."""
-    full_message = ("\n==Need human help : Self-Diagnosis failed - UserRightsBot ==\n" + message)
+def users_in_section(text):
+    """Get all users in a particular rights's nomination area."""
+    users = re.findall(r"{{User5\|(.*?)}}", text)
+    return users
 
-    try:
-        dev = pywikibot.User(SITE, "Eatcha")
-        dev.send_email("Need human help : UserRightsBot - Self-Diagnosis failed", full_message, ccme=False)
-    except:
-        pass
+def getCandText(username, right_section):
+    """Get the candidate's nomination from COM:RFR, includes all commnent."""
+    return re.search((r"(.*?\n.*?{{User5\|%s}}(?:[\s\S]*?))(?:\n\n|==)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1)
 
-def checks(right):
-    """Perform some checks to ensure we are handling nominations correctly, also try to self add comments if not found."""
-    if re.search((r"<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)end(?:[\s|]*?)-->" % right), (rfr_page.get(get_redirect=True))) is None:
-        if rights.index(right) < (len(rights)-1):
-            regex = r"<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)start(?:[\s|]*?)-->" % rights[(rights.index(right)+1)]
-        else:
-            regex = r"==(?:\s*)Translation(?:\s*)administrators(?:\s*)&(?:\s*)GW(?:\s*)Toolset(?:\s*)users(?:\s*)=="
-        try:
-            next_start = re.search(regex, rfr_page.get(get_redirect=True)).group()
-            new_text = rfr_page.get().replace(next_start, (("<!-- %s candidates end -->" % right) + "\n" + next_start))
-            edit_summary = ("Self-Diagnosis  : adding %s end comment" % right)
-            commit(rfr_page.get(), new_text, rfr_page, summary=edit_summary)
-        except:
-            human_help("Missing end tag for %s , but unable to self fix. You can fix this error by adding the following text at appropriate loction on [[COM:RFR]]\n<code><nowiki><!-- %s candidates end --></nowiki></code>" % (right, right))
-    elif re.search((r"<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)start(?:[\s|]*?)-->" % right), (rfr_page.get(get_redirect=True))) is None:
-        if rights.index(right) > 0:
-            regex = r"<!--(?:[\s|]*?)%s(?:[\s|]*?)candidates(?:[\s|]*?)end(?:[\s|]*?)-->" % rights[(rights.index(right)-1)]
-        else:
-            regex = r"==(\s*)%s(\s*)==" % (rights[0])
-        try:
-            prior_end = re.search(regex, rfr_page.get(get_redirect=True)).group()
-            new_text = rfr_page.get().replace(prior_end, (prior_end + "\n" + ("<!-- %s candidates start -->" % right)))
-            edit_summary = ("Self-Diagnosis  : adding %s start comment" % right)
-            commit(rfr_page.get(), new_text, rfr_page, summary=edit_summary)
-        except:
-            human_help("Missing start tag for %s , but unable to self fix. You can fix this error by adding the following text at appropriate loction on [[COM:RFR]]\n<code><nowiki><!-- %s candidates start --></nowiki></code>" % (right, right))
+def rights_section_finder_array(text):
+    matches = re.finditer(r"==([^=]*?)==", text)
+    rights_start_array = []
+    right_name_array = []
+    for m in matches:
+        right_name = m.group(1)
+        if right_name and not right_name.isspace():
+            right_name_array.append(right_name.strip())
+            right_start = m.group(0)
+            rights_start_array.append(right_start)
+    array_regex = []
+    for i,start in enumerate(rights_start_array):
+        regex = "%s(.*)%s" % (start, rights_start_array[1+i] if i < (len(rights_start_array)-1) else "<!-- User:UserRightsBot - ON -->")
+        array_regex.append(regex)
+    return right_name_array, array_regex
 
 def archive(text_to_add,right,status,username):
     """If a nomination is approved/declined add to archive and remove from COM:RFR page."""
+    if not right:
+        out(" New rights found, please declare in dict_for_archive for conversion" ,color = "red" )
+        return
     archive_page = pywikibot.Page(SITE, (rfr_base_page_name + status + right + "/" + str((datetime.datetime.utcnow()).year)))
     try:
         old_text = archive_page.get(get_redirect=False)
@@ -91,60 +70,64 @@ def archive(text_to_add,right,status,username):
     try:
         commit(old_text, (old_text + "\n" + text_to_add), archive_page, summary=("Adding " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request"))
     except pywikibot.LockedPage as error:
-        human_help("%s is locked, unable to archive closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % (archive_page, error))
+        out(error,color="red")
         return
     try:
         commit(rfr_page.get(), (rfr_page.get(get_redirect=False)).replace(text_to_add, ""), rfr_page, summary=("Removing " + ("[[User:%s|%s]]'s " % (username,username)) + right + " request" + (" (Status: %s) " % (status.replace("/","",2)))))
     except pywikibot.LockedPage as error:
-        human_help("%s is locked, unable to remove closed candidates. Update my userrights or downgrade protection.\nError Log :\n %s" % ("COM:RFR", error))
+        out(error,color="red")
         return
 
-def TellLastRun():
-    page = pywikibot.Page(SITE, "User:UserRightsBot/last-run")
+def hours_since_granted(text):
+    time_stamps = re.findall(r"[0-9]{1,2}:[0-9]{1,2},\s[0-9]{1,2}\s[a-zA-Z]{1,9}\s[0-9]{4}\s\(UTC\)", text)
+    for time_stamp in time_stamps:
+        last_edit_time = time_stamp
     try:
-        old_text = page.get(get_redirect=False)
-    except pywikibot.exceptions.NoPage:
-        old_text = ""
-    out("Updating last run time", newline=True, date=True, color="yellow")
-    commit(old_text, str(datetime.datetime.utcnow()), page, "Updating last complete run time")
+        dt = ( (datetime.datetime.utcnow()) - datetime.datetime.strptime(last_edit_time, '%H:%M, %d %B %Y (UTC)') )
+    except UnboundLocalError:
+        return 0
+    return (int(dt.seconds/3600))
 
-def handle_candidates(right):
-    """Sort the candidates and handle them."""
-    section, users = users_in_section(right)
-    for user in users:
-        try:
-            candidate_text = getCandText(user, section)
-        except AttributeError:
-            continue
+def handle_candidates():
+    dict_for_archive = {
+    'Confirmed' : 'Confirmed',
+    'Autopatrol' : 'Autopatrolled',
+    'AutoWikiBrowser access' : 'AutoWikiBrowser access',
+    'Patroller' : 'Patroller',
+    'Rollback' : 'Rollback',
+    'Template editor' : 'Template editor',
+    'Filemover' : 'Filemover',
+    'Upload Wizard campaign editors' : 'Upload Wizard campaign editors',
+    'Translation administrators & GW Toolset users' : None,
+        
+    }
+    text = rfr_page.get()
+    rights_name_array, rights_regex_array = rights_section_finder_array(text)
+    for right_name in rights_name_array:
+        right_regex = rights_regex_array[rights_name_array.index(right_name)]
+        right_section = re.search(right_regex, text, re.DOTALL).group(1)
+        users = users_in_section(right_section)
+        for user in users:
+            candidate_text = getCandText(user, right_section)
+            dt = hours_since_granted(candidate_text)
+            if dt < 12:
+                out("candidate %s is %d hours only, will wait for 12 hours atleast" % (user, dt), color = "yellow")
+                continue
 
-        if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
-            out("User:%s is denied %s rights" % (user,right), color='red', date=True)
-            archive(candidate_text, right, "/Denied/", user)
-        elif re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
-            out("User:%s is granted  %s rights" % (user,right), color="green", date=True)
-            archive(candidate_text, right, "/Approved/", user)
-        else:
-            out("User:%s is still waiting for %s rights to be granted" % (user,right), color='white', date=True)
-            continue
+            if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
+                out("User:%s is denied %s rights" % (user,right_name), color='red', date=True)
+                archive(candidate_text, dict_for_archive.get(right_name, None), "/Denied/", user)
+            elif re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
+                out("User:%s is granted  %s rights" % (user,right_name), color="green", date=True)
+                archive(candidate_text, dict_for_archive.get(right_name, None), "/Approved/", user)
+            else:
+                out("User:%s is still waiting for %s rights to be granted" % (user,right_name), color='white', date=True)
+                continue
 
 def main():
-    """Triggers checks and candidate handling for all rights. """
-    global rights
-    if not SITE.logged_in():
-        SITE.login()
-    rights = [
-        'Confirmed',                     # 0
-        'Autopatrolled',                 # 1
-        'AutoWikiBrowser access',        # 2
-        'Patroller',                     # 3
-        'Rollback',                      # 4
-        'Filemover',                     # 5
-        'Template editor',               # 6
-        'Upload Wizard campaign editors' # 7
-        ]
-    for right in rights:
-        checks(right)
-        handle_candidates(right)
+    # if not SITE.logged_in():
+    #     SITE.login()
+    handle_candidates()
     TellLastRun()
 
 if __name__ == "__main__":
