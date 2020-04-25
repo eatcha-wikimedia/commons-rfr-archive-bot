@@ -83,7 +83,7 @@ def hours_since_granted(text):
     for time_stamp in time_stamps:
         last_edit_time = time_stamp
     try:
-        dt = ( (datetime.datetime.utcnow()) - datetime.datetime.strptime(last_edit_time, '%I:%M, %d %B %Y (UTC)') )
+        dt = ( (datetime.datetime.utcnow()) - datetime.datetime.strptime(last_edit_time, '%H:%M, %d %B %Y (UTC)') )
     except UnboundLocalError:
         return 0
     return (int(dt.seconds/3600))
@@ -111,7 +111,7 @@ def handle_candidates():
             candidate_text = getCandText(user, right_section)
             dt = hours_since_granted(candidate_text)
             if dt < 12:
-                out("candidate is %d hours only, will wait for 12 hours atleast" % dt, color = "yellow")
+                out("candidate %s is %d hours only, will wait for 12 hours atleast" % (user, dt), color = "yellow")
                 continue
 
             if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text) is not None:
