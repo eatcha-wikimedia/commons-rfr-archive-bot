@@ -31,17 +31,18 @@ def out(text, newline=True, date=False, color=None):
 def rights_section_finder_array(text):
     matches = re.finditer(r"==([^=]*?)==", text)
     right_start_array = []
+    right_name_array = []
     for m in matches:
         right_name = m.group(1)
         if right_name and not right_name.isspace():
+            right_name_array.append(right_name.strip())
             right_start = m.group(0)
             right_start_array.append(right_start)
     array_regex = []
     for i,start in enumerate(right_start_array):
         regex = "%s(.*)%s" % (start, right_start_array[1+i] if i < (len(right_start_array)-1) else "<!-- User:UserRightsBot - ON -->")
         array_regex.append(regex)
-    
-    return array_regex
+    return right_name_array, array_regex
 
 def handle_candidates(right):
     pass
