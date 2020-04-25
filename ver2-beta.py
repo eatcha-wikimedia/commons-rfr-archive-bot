@@ -60,7 +60,14 @@ def handle_candidates():
         right_section = re.search(right_regex, text, re.DOTALL).group(1)
         users = users_in_section(text)
         for user in users:
-            cand_text = getCandText(username, right_section)
+            candidate_text = getCandText(username, right_section)
+            if re.search((r"{{(?:[Nn]ot[\s|][Dd]one|[Nn][dD]).*?}}"), candidate_text):
+                out("User:%s is denied %s rights" % (user,right), color='red', date=True)
+            elif re.search((r"{{(?:[Dd]one|[dD]|[Gg]ranted).*?}}"), candidate_text) is not None:
+                out("User:%s is granted  %s rights" % (user,right), color="green", date=True)
+            else:
+                out("User:%s is still waiting for %s rights to be granted" % (user,right), color='white', date=True)
+                continue
 
     
 
