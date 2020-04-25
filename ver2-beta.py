@@ -33,9 +33,9 @@ def users_in_section(text):
     users = re.findall(r"{{User5\|(.*?)}}", text)
     return users
 
-def getCandText(username, rights_section):
+def getCandText(username, right_section):
     """Get the candidate's nomination from COM:RFR, includes all commnent."""
-    return re.search((r"(.*?\n.*?{{User5\|%s}}(?:[\s\S]*?))(?:[=]{2,4})" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), rights_section).group(1).strip()
+    return re.search((r"(.*?\n.*?{{User5\|%s}}(?:[\s\S]*?))(?:[=]{2,4})" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1).strip()
 
 def rights_section_finder_array(text):
     matches = re.finditer(r"==([^=]*?)==", text)
@@ -58,7 +58,10 @@ def handle_candidates():
     for right_name in rights_name_array:
         right_regex = rights_regex_array[rights_name_array.index(right_name)]
         right_section = re.search(right_regex, text, re.DOTALL).group(1)
-        
+        users = users_in_section(text)
+        for user in users:
+            cand_text = getCandText(username, right_section)
+
     
 
 def main():
