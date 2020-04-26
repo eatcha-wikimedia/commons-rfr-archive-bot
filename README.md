@@ -1,4 +1,4 @@
-# commons-rfr-archive-bot
-commons rfr archive bot
+# Commons:Requests for rights archive bot
 
-https://commons.wikimedia.org/wiki/User:UserRightsBot
+
+<https://commons.wikimedia.org/wiki/User:UserRightsBot>
