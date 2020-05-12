@@ -39,7 +39,7 @@ def users_in_section(text):
 
 def getCandText(username, right_section):
     """Get the candidate's nomination from COM:RFR, includes all commnent."""
-    return re.search((r"(.*?\n.*?{{User5\|%s}}(?:[\s\S]*?))(?:\n\n|==)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1)
+    return re.search((r"(.*?\n.*?{{User5\|WikiLucas00}}(?:[\s\S]*?))(?:\n\n\n|==)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1)
 
 def rights_section_finder_array(text):
     matches = re.finditer(r"==([^=]*?)==", text)
