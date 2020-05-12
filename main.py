@@ -86,7 +86,7 @@ def hours_since_granted(text):
         dt = ( (datetime.datetime.utcnow()) - datetime.datetime.strptime(last_edit_time, '%H:%M, %d %B %Y (UTC)') )
     except UnboundLocalError:
         return 0
-    return (int(dt.seconds/3600))
+    return int(dt.days * 24 + dt.seconds // 3600)
 
 def handle_candidates():
     dict_for_archive = {
