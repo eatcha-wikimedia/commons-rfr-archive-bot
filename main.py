@@ -34,12 +34,12 @@ def out(text, newline=True, date=False, color=None):
 
 def users_in_section(text):
     """Get all users in a particular rights's nomination area."""
-    users = re.findall(r"{{User5\|(.*?)}}", text)
+    users = re.findall(r"{{[Uu]ser5\|(.*?)}}", text)
     return users
 
 def getCandText(username, right_section):
     """Get the candidate's nomination from COM:RFR, includes all commnent."""
-    return re.search((r"(.*?\n.*?{{User5\|%s}}(?:[\s\S]*?))(?:\n\n|==)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1)
+    return re.search((r"(.*?\n.*?{{[Uu]ser5\|%s}}(?:[\s\S]*?))(?:\n\n|==)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1)
 
 def rights_section_finder_array(text):
     matches = re.finditer(r"==([^=]*?)==", text)
