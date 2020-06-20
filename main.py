@@ -42,7 +42,7 @@ def getCandText(username, right_section):
     return re.search((r"(.*?\n.*?{{[Uu]ser5\|%s}}(?:[\s\S]*?))(?:\n\n|==)" % (username.replace("(","\(").replace(")","\)").replace("*","\*").replace("?","\?"))), right_section).group(1)
 
 def rights_section_finder_array(text):
-    matches = re.finditer(r"==([^=]*?)==", text)
+    matches = re.finditer(r"==([^|=]*?)==", text)
     rights_start_array = []
     right_name_array = []
     for m in matches:
