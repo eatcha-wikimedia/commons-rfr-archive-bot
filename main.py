@@ -11,6 +11,7 @@ def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
     out("\nAbout to make changes at : '%s'" % page.title())
     pywikibot.showDiff(old_text, new_text)
+    return
     page.put(new_text, summary=summary, watchArticle=True, minorEdit=False)
 
 
