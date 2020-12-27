@@ -220,7 +220,7 @@ def hours_since_granted(text):
     for time_stamp in time_stamps:
         last_edit_time = time_stamp
     try:
-        dt = (datetime.datetime.utcnow()) - datetime.datetime.strptime(
+        dt = (datetime.utcnow()) - datetime.strptime(
             last_edit_time, "%H:%M, %d %B %Y (UTC)"
         )
     except UnboundLocalError:
