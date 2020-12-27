@@ -1,6 +1,10 @@
 import re
 import pywikibot
 import datetime
+from datetime import datetime
+from pathlib import Path
+import csv
+import os
 
 SITE = pywikibot.Site()
 rfr_base_page_name = "Commons:Requests_for_rights"
@@ -24,6 +28,88 @@ def out(text, newline=True, date=False, color=None):
         else ""
     )
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
+
+
+def reg_date(pwb_user):
+    """Recent most editor for file."""
+    ts = pwb_user.registration(force=True)
+    return datetime.strptime(str(ts), "%Y-%m-%dT%H:%M:%SZ")
+
+
+def dataset_maker(right, status, username):
+    Path(".logs").mkdir(parents=True, exist_ok=True)
+    dataset = ".logs/rights_data.csv"
+    if not os.path.isfile(dataset):
+        open(dataset, "w").close()
+        with open(dataset, mode="a") as f:
+            f.write(
+                "UserName,HasLocalUserPage,EntryDate,IsRightGranted,RequestedRight,EditCount,AccountAge,Gender,CanMail,AllRights,Scores\n"
+            )
+
+    percent = lambda num, total: int((num / total) * 100)
+    date_yyyy_mm_dd = (datetime.utcnow()).strftime("%Y-%m-%d")
+    right_granted_or_not = True
+    if status == "/Denied/":
+        right_granted_or_not = False
+
+    pwb_user = pywikibot.User(source=SITE, title=username)
+    has_local_user_page = pwb_user.exists()
+    requested_right = right
+    edit_count = pwb_user.editCount(force=True)
+    all_rights = ",".join([x for x in pwb_user.groups() if x != "*"])
+    try:  # see User:Yann, one of the first person on commmons
+        account_age_days = (datetime.utcnow() - reg_date(pwb_user)).days
+    except ValueError:
+        account_age_days = 10000
+    gender = pwb_user.gender(force=True)
+    is_mailable = pwb_user.isEmailable(force=True)
+    x = pwb_user.contributions(total=2000)
+    no_file = 0
+    no_commons = 0
+    no_template = 0
+    no_category = 0
+    no_mediaWiki = 0
+    for i, y in enumerate(x, start=1):
+        ns = y[0].namespace()
+        if "File" in ns:
+            no_file += 1
+        elif "Project" in ns:
+            no_commons += 1
+        elif "Template" in ns:
+            no_template += 1
+        elif "Category" in ns:
+            no_category += 1
+        elif "MediaWiki" in ns:
+            no_mediaWiki += 1
+    file_score = percent(no_file, i)
+    commons_score = percent(no_commons, i)
+    template_score = percent(no_template, i)
+    category_score = percent(no_category, i)
+    mediaWiki_score = percent(no_mediaWiki, i)
+    score = "file %d,commons %d,template %d,category %d,mediawiki %d" % (
+        file_score,
+        commons_score,
+        template_score,
+        category_score,
+        mediaWiki_score,
+    )
+    with open(dataset, mode="a") as ds:
+        writer = csv.writer(ds, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(
+            [
+                username,
+                has_local_user_page,
+                date_yyyy_mm_dd,
+                right_granted_or_not,
+                requested_right,
+                edit_count,
+                account_age_days,
+                gender,
+                is_mailable,
+                all_rights,
+                score,
+            ]
+        )
 
 
 def users_in_section(text):
@@ -124,6 +210,8 @@ def archive(text_to_add, right, status, username):
         out(error, color="red")
         return
 
+    dataset_maker(right, status, username.replace("_", " "))
+
 
 def hours_since_granted(text):
     time_stamps = re.findall(
@@ -201,8 +289,7 @@ def handle_candidates():
                 )
             else:
                 out(
-                    "User:%s is still not granted %s right."
-                    % (user, right_name),
+                    "User:%s is still not granted %s right." % (user, right_name),
                     color="white",
                     date=True,
                 )
