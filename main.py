@@ -6,15 +6,6 @@ SITE = pywikibot.Site()
 rfr_base_page_name = "Commons:Requests_for_rights"
 rfr_page = pywikibot.Page(SITE, rfr_base_page_name)
 
-def TellLastRun():
-    page = pywikibot.Page(SITE, "User:UserRightsBot/last-run")
-    try:
-        old_text = page.get(get_redirect=False)
-    except pywikibot.exceptions.NoPage:
-        old_text = ""
-    out("Updating last run time", newline=True, date=True, color="yellow")
-    commit(old_text, str(datetime.datetime.utcnow()), page, "Updating last complete run time")
-
 def commit(old_text, new_text, page, summary):
     """Show diff and submit text to page."""
     out("\nAbout to make changes at : '%s'" % page.title())
@@ -128,7 +119,6 @@ def main():
     if not SITE.logged_in():
         SITE.login()
     handle_candidates()
-    TellLastRun()
 
 if __name__ == "__main__":
   try:
