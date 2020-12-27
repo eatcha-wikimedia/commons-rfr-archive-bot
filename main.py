@@ -110,7 +110,7 @@ def archive(text_to_add, right, status, username):
     try:
         commit(
             rfr_page.get(),
-            (rfr_page.get(get_redirect=False)).replace(text_to_add, ""),
+            (rfr_page.get(get_redirect=False)).replace("\n" + text_to_add, ""),
             rfr_page,
             summary=(
                 "Archiving "
