@@ -161,7 +161,7 @@ def handle_candidates():
         for user in users:
             candidate_text = getCandText(user, right_section)
             dt = hours_since_granted(candidate_text)
-            if dt < 12:
+            if dt < -1:
                 out(
                     "candidate %s is %d hours only, will wait for 12 hours atleast"
                     % (user, dt),
