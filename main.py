@@ -95,7 +95,7 @@ def archive(text_to_add, right, status, username):
     try:
         commit(
             old_text,
-            (old_text + "\n" + text_to_add),
+            (old_text + "\n\n" + text_to_add),
             archive_page,
             summary=(
                 "Adding "
