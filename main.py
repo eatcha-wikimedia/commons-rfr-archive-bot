@@ -36,7 +36,7 @@ def getCandText(username, right_section):
     """Get the candidate's nomination from COM:RFR, includes all commnent."""
     return re.search(
         (
-            r"(.*?\n.*?{{[Uu]ser5\|%s}}(?:[\s\S]*?))(?:\n\n|==)"
+            r"(.*?(?:[\n]{1,3}).*?{{[Uu]ser5\|%s}}(?:[\s\S]*?))(?:\n\n|==)"
             % (
                 username.replace("(", "\(")
                 .replace(")", "\)")
