@@ -189,7 +189,7 @@ def handle_candidates():
                 is not None
             ):
                 out(
-                    "User:%s is granted  %s rights" % (user, right_name),
+                    "User:%s is granted  %s right." % (user, right_name),
                     color="green",
                     date=True,
                 )
@@ -201,7 +201,7 @@ def handle_candidates():
                 )
             else:
                 out(
-                    "User:%s is still waiting for %s rights to be granted"
+                    "User:%s is still not granted %s right."
                     % (user, right_name),
                     color="white",
                     date=True,
