@@ -15,7 +15,7 @@ def commit(old_text, new_text, page, summary):
 
 
 def out(text, newline=True, date=False, color=None):
-    """Just output some text to the consoloe or log."""
+    """Just output some text to the console or log."""
     if color:
         text = "\03{%s}%s\03{default}" % (color, text)
     dstr = (
