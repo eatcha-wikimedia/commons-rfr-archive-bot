@@ -223,7 +223,7 @@ def archive(text_to_add, right, status, username):
     dataset_maker(right, status, username.replace("_", " "))
 
 
-def hours_since_granted(text):
+def hours_since_last_signed(text):
     """Hours elapsed since the time at which nomination was last signed."""
     time_stamps = re.findall(
         r"[0-9]{1,2}:[0-9]{1,2},\s[0-9]{1,2}\s[a-zA-Z]{1,9}\s[0-9]{4}\s\(UTC\)", text
@@ -259,7 +259,7 @@ def handle_candidates():
         users = users_in_section(right_section)
         for user in users:
             candidate_text = getCandText(user, right_section)
-            dt = hours_since_granted(candidate_text)
+            dt = hours_since_last_signed(candidate_text)
             if dt < 12:
                 out(
                     "candidate %s is %d hours only, will wait for 12 hours atleast"
