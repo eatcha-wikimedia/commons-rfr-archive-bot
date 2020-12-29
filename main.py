@@ -260,10 +260,11 @@ def handle_candidates():
         for user in users:
             candidate_text = getCandText(user, right_section)
             dt = hours_since_last_signed(candidate_text)
-            if dt < 12:
+            wait_hour = 12
+            if dt < wait_hour:
                 out(
-                    "candidate %s is %d hours only, will wait for 12 hours atleast"
-                    % (user, dt),
+                    "User:%s was given '%s' right %d hours ago, %d more hours to archiving."
+                    % (user, right_name, dt, int(wait_hour-dt)),
                     color="yellow",
                 )
                 continue
