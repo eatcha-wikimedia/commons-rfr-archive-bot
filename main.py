@@ -171,7 +171,7 @@ def archive(text_to_add, right, status, username):
             + status
             + right
             + "/"
-            + str((datetime.datetime.utcnow()).year)
+            + str((datetime.utcnow()).year)
         ),
     )
     try:
