@@ -266,6 +266,7 @@ def handle_candidates():
                     "[[User:%s]] was granted '%s' right %d hours ago, %d more hours to archiving."
                     % (user, right_name, dt, int(wait_hour-dt)),
                     color="white",
+                    date=True,
                 )
                 continue
 
