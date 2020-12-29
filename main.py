@@ -263,9 +263,9 @@ def handle_candidates():
             wait_hour = 12
             if dt < wait_hour:
                 out(
-                    "User:%s was given '%s' right %d hours ago, %d more hours to archiving."
+                    "[[User:%s]] was granted '%s' right %d hours ago, %d more hours to archiving."
                     % (user, right_name, dt, int(wait_hour-dt)),
-                    color="yellow",
+                    color="white",
                 )
                 continue
 
@@ -301,7 +301,7 @@ def handle_candidates():
                 )
             else:
                 out(
-                    "User:%s is still not granted %s right." % (user, right_name),
+                    "[[User:%s]] is not yet granted/denied the '%s' right." % (user, right_name),
                     color="white",
                     date=True,
                 )
