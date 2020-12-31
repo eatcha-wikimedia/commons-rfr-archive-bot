@@ -1,12 +1,13 @@
 import re
-import pywikibot
-import datetime
-from datetime import datetime
-from pathlib import Path
-import csv
 import os
+import csv
+import pywikibot
+from pathlib import Path
+from datetime import datetime
+
 
 SITE = pywikibot.Site()
+
 rfr_base_page_name = "Commons:Requests_for_rights"
 rfr_page = pywikibot.Page(SITE, rfr_base_page_name)
 
