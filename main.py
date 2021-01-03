@@ -55,9 +55,9 @@ def dataset_maker(right, status, username):
 
     percent = lambda num, total: int((num / total) * 100)
     date_yyyy_mm_dd = (datetime.utcnow()).strftime("%Y-%m-%d")
-    right_granted_or_not = True
+    is_right_granted = True
     if status == "/Denied/":
-        right_granted_or_not = False
+        is_right_granted = False
 
     pwb_user = pywikibot.User(source=SITE, title=username)
     has_local_user_page = pwb_user.exists()
@@ -107,7 +107,7 @@ def dataset_maker(right, status, username):
                 username,
                 has_local_user_page,
                 date_yyyy_mm_dd,
-                right_granted_or_not,
+                is_right_granted,
                 requested_right,
                 edit_count,
                 account_age_days,
