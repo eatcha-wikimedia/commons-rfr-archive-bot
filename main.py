@@ -1,13 +1,9 @@
-import re
-import os
-import csv
-import pywikibot
+import re, re, csv, pywikibot
 from pathlib import Path
 from datetime import datetime
 
 
 SITE = pywikibot.Site()
-
 rfr_base_page_name = "Commons:Requests_for_rights"
 rfr_page = pywikibot.Page(SITE, rfr_base_page_name)
 
@@ -23,21 +19,18 @@ def out(text, newline=True, date=False, color=None):
     """Just output some text to the console or log."""
     if color:
         text = "\03{%s}%s\03{default}" % (color, text)
-    dstr = (
-        "%s: " % datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        if date
-        else ""
-    )
+    dstr = "%s: " % datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") if date else ""
     pywikibot.stdout("%s%s" % (dstr, text), newline=newline)
 
 
 def reg_date(pwb_user):
     """Registration date (on commons) of the user."""
-    ts = pwb_user.registration(force=True)
-    return datetime.strptime(str(ts), "%Y-%m-%dT%H:%M:%SZ")
+    return datetime.strptime(
+        str(pwb_user.registration(force=True)), "%Y-%m-%dT%H:%M:%SZ"
+    )
 
 
-def dataset_maker(right, status, username):
+def dataset_maker(requested_right, status, username):
     """
     We are collecting some publicly available data that can be
     used to train bots to recommend users for rights or even
@@ -54,28 +47,15 @@ def dataset_maker(right, status, username):
             )
 
     percent = lambda num, total: int((num / total) * 100)
-    date_yyyy_mm_dd = (datetime.utcnow()).strftime("%Y-%m-%d")
-    is_right_granted = True
-    if status == "/Denied/":
-        is_right_granted = False
-
     pwb_user = pywikibot.User(source=SITE, title=username)
-    has_local_user_page = pwb_user.exists()
-    requested_right = right
-    edit_count = pwb_user.editCount(force=True)
-    all_rights = ",".join([x for x in pwb_user.groups() if x != "*"])
-    try:  # see User:Yann, one of the first person on commmons
+
+    try:  # see User:Yann, one of the first users on commmons. Raises exception
         account_age_days = (datetime.utcnow() - reg_date(pwb_user)).days
     except ValueError:
         account_age_days = 10000
-    gender = pwb_user.gender(force=True)
-    is_mailable = pwb_user.isEmailable(force=True)
+
     x = pwb_user.contributions(total=2000)
-    no_file = 0
-    no_commons = 0
-    no_template = 0
-    no_category = 0
-    no_mediaWiki = 0
+    no_file, no_commons, no_template, no_category, no_mediaWiki = 0, 0, 0, 0, 0
     for i, y in enumerate(x, start=1):
         ns = y[0].namespace()
         if "File" in ns:
@@ -88,32 +68,28 @@ def dataset_maker(right, status, username):
             no_category += 1
         elif "MediaWiki" in ns:
             no_mediaWiki += 1
-    file_score = percent(no_file, i)
-    commons_score = percent(no_commons, i)
-    template_score = percent(no_template, i)
-    category_score = percent(no_category, i)
-    mediaWiki_score = percent(no_mediaWiki, i)
+
     score = "file %d,commons %d,template %d,category %d,mediawiki %d" % (
-        file_score,
-        commons_score,
-        template_score,
-        category_score,
-        mediaWiki_score,
+        percent(no_file, i),
+        percent(no_commons, i),
+        percent(no_template, i),
+        percent(no_category, i),
+        percent(no_mediaWiki, i),
     )
     with open(dataset, mode="a") as ds:
         writer = csv.writer(ds, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(
             [
                 username,
-                has_local_user_page,
-                date_yyyy_mm_dd,
-                is_right_granted,
+                pwb_user.exists(),
+                (datetime.utcnow()).strftime("%Y-%m-%d"),
+                (True if status == "/Denied/" else False),
                 requested_right,
-                edit_count,
+                pwb_user.editCount(force=True),
                 account_age_days,
-                gender,
-                is_mailable,
-                all_rights,
+                pwb_user.gender(force=True),
+                pwb_user.isEmailable(force=True),
+                ",".join([x for x in pwb_user.groups() if x != "*"]),
                 score,
             ]
         )
@@ -121,8 +97,7 @@ def dataset_maker(right, status, username):
 
 def users_in_section(text):
     """Get all users in a particular rights's nomination area."""
-    users = re.findall(r"{{[Uu]ser5\|(.*?)}}", text)
-    return users
+    return re.findall(r"{{[Uu]ser5\|(.*?)}}", text)
 
 
 def getCandText(username, right_section):
@@ -146,24 +121,26 @@ def rights_section_finder_array(text):
     Finds rights listed on COM:RFR, creates
     the regex to match the right's section
     """
-    matches = re.finditer(r"==([^|=]*?)==", text)
     rights_start_array = []
     right_name_array = []
-    for m in matches:
+    for m in re.finditer(r"==([^|=]*?)==", text):
         right_name = m.group(1)
         if right_name and not right_name.isspace():
             right_name_array.append(right_name.strip())
-            right_start = m.group(0)
-            rights_start_array.append(right_start)
+            rights_start_array.append(m.group(0))
     array_regex = []
     for i, start in enumerate(rights_start_array):
-        regex = "%s(.*)%s" % (
-            start,
-            rights_start_array[1 + i]
-            if i < (len(rights_start_array) - 1)
-            else "<!-- User:UserRightsBot - ON -->",
+        array_regex.append(
+            (
+                "%s(.*)%s"
+                % (
+                    start,
+                    rights_start_array[1 + i]
+                    if i < (len(rights_start_array) - 1)
+                    else "<!-- User:UserRightsBot - ON -->",
+                )
+            )
         )
-        array_regex.append(regex)
     return right_name_array, array_regex
 
 
@@ -177,13 +154,7 @@ def archive(text_to_add, right, status, username):
         return
     archive_page = pywikibot.Page(
         SITE,
-        (
-            rfr_base_page_name
-            + status
-            + right
-            + "/"
-            + str((datetime.utcnow()).year)
-        ),
+        (rfr_base_page_name + status + right + "/" + str((datetime.utcnow()).year)),
     )
     try:
         old_text = archive_page.get(get_redirect=False)
@@ -226,10 +197,9 @@ def archive(text_to_add, right, status, username):
 
 def hours_since_last_signed(text):
     """Hours elapsed since the time at which nomination was last signed."""
-    time_stamps = re.findall(
+    for time_stamp in re.findall(
         r"[0-9]{1,2}:[0-9]{1,2},\s[0-9]{1,2}\s[a-zA-Z]{1,9}\s[0-9]{4}\s\(UTC\)", text
-    )
-    for time_stamp in time_stamps:
+    ):
         last_edit_time = time_stamp
     try:
         dt = (datetime.utcnow()) - datetime.strptime(
@@ -240,7 +210,7 @@ def hours_since_last_signed(text):
     return int(dt.days * 24 + dt.seconds // 3600)
 
 
-def handle_candidates():
+def handle_candidates(wait_hour):
     dict_for_archive = {
         "Confirmed": "Confirmed",
         "Autopatrol": "Autopatrolled",
@@ -255,17 +225,16 @@ def handle_candidates():
     text = rfr_page.get()
     rights_name_array, rights_regex_array = rights_section_finder_array(text)
     for right_name in rights_name_array:
-        right_regex = rights_regex_array[rights_name_array.index(right_name)]
-        right_section = re.search(right_regex, text, re.DOTALL).group(1)
-        users = users_in_section(right_section)
-        for user in users:
+        right_section = re.search(
+            rights_regex_array[rights_name_array.index(right_name)], text, re.DOTALL
+        ).group(1)
+        for user in users_in_section(right_section):
             candidate_text = getCandText(user, right_section)
             dt = hours_since_last_signed(candidate_text)
-            wait_hour = 12
             if dt < wait_hour:
                 out(
                     "[[User:%s]] was granted '%s' right %d hours ago, %d more hours to archiving."
-                    % (user, right_name, dt, int(wait_hour-dt)),
+                    % (user, right_name, dt, int(wait_hour - dt)),
                     color="white",
                     date=True,
                 )
@@ -303,7 +272,8 @@ def handle_candidates():
                 )
             else:
                 out(
-                    "[[User:%s]] is not yet granted/denied the '%s' right." % (user, right_name),
+                    "[[User:%s]] is not yet granted/denied the '%s' right."
+                    % (user, right_name),
                     color="white",
                     date=True,
                 )
@@ -313,7 +283,8 @@ def handle_candidates():
 def main():
     if not SITE.logged_in():
         SITE.login()
-    handle_candidates()
+    wait_hour = 12
+    handle_candidates(wait_hour)
 
 
 if __name__ == "__main__":
